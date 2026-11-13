@@ -485,6 +485,19 @@ impl MoonshineCompositor {
 		Rectangle::new((0, 0).into(), (self.width as i32, self.height as i32).into())
 	}
 
+	fn configure_maximized(&self, surface: &ToplevelSurface, maximized: bool) {
+		let size = self.output_rect().size;
+		surface.with_pending_state(|state| {
+			state.size = Some(size);
+			if maximized {
+				state.states.set(XdgToplevelState::Maximized);
+				return;
+			}
+			state.states.unset(XdgToplevelState::Maximized);
+		});
+		surface.send_configure();
+	}
+
 	/// Helper to read an X11 window property via `X11Focus`, returning a
 	/// default value when X11 focus infrastructure is not available.
 	///
@@ -1914,6 +1927,14 @@ impl XdgShellHandler for MoonshineCompositor {
 			meta.geometry = geometry;
 		}
 		self.reevaluate_focus();
+	}
+
+	fn maximize_request(&mut self, surface: ToplevelSurface) {
+		self.configure_maximized(&surface, true);
+	}
+
+	fn unmaximize_request(&mut self, surface: ToplevelSurface) {
+		self.configure_maximized(&surface, false);
 	}
 
 	fn app_id_changed(&mut self, surface: ToplevelSurface) {
