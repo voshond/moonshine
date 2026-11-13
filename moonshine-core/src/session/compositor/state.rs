@@ -901,8 +901,8 @@ impl MoonshineCompositor {
 	/// A window whose content is overridden by the WSI presents the override
 	/// surface, so its buffer is the override's.
 	fn window_source_size(&self, window: &smithay::desktop::Window) -> Option<(i32, i32)> {
-		if let Some(x11_id) = window.x11_surface().map(|x| x.window_id())
-			&& let Some((surface, render_window)) = self.override_surface.as_ref()
+		let x11_id = window.x11_surface()?.window_id();
+		if let Some((surface, render_window)) = self.override_surface.as_ref()
 			&& *render_window == x11_id
 			&& surface.alive()
 			&& let Some(size) = Self::surface_buffer_size(surface)
